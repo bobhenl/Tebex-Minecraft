@@ -36,8 +36,7 @@ public class BuyGUI {
 
         ListingGui listingGui = new ListingGui()
                 .title(remapLegacyFormatSeparator(config.getString("gui.menu.home.title", "Server Shop")))
-                .rows(config.getInt("gui.menu.home.rows") < 1 ? categories.size() / 9 + 1
-                        : config.getInt("gui.menu.home.rows"))
+                .rows(Math.max(config.getInt("gui.menu.home.rows"), (categories.size() + 8) / 9))
                 .create();
 
         categories.sort(Comparator.comparingInt(Category::getOrder));
@@ -54,7 +53,12 @@ public class BuyGUI {
 
     private void openCategoryMenu(Player player, ICategory category) {
         int configRows = config.getInt("gui.menu.category.rows");
-        int neededRows = (category.getPackages().size() / 9) + 1;
+        int subCategories = category instanceof Category && ((Category) category).getSubCategories() != null
+                ? ((Category) category).getSubCategories().size() : 0;
+        boolean hasBackItem = category instanceof SubCategory
+                || (category instanceof Category && ((Category) category).getSubCategories() != null);
+        // Every package, sub-category and the back button needs its own slot.
+        int neededRows = (category.getPackages().size() + subCategories + (hasBackItem ? 1 : 0) + 8) / 9;
 
         if (configRows < neededRows) {
             configRows = neededRows;

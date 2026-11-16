@@ -32,7 +32,7 @@ public class ListingGui implements InventoryHolder {
     }
 
     public ListingGui rows(int rows) {
-        this.rows = rows;
+        this.rows = Math.max(1, Math.min(6, rows));
 
         // Re-create the inventory after setting a new row count
         this.inventory = Bukkit.createInventory(this, rows*9, title);
@@ -63,10 +63,16 @@ public class ListingGui implements InventoryHolder {
         while (items.containsKey(nextSlot) && nextSlot < rows * 9) {
             nextSlot++;
         }
+        if (nextSlot >= rows * 9) {
+            return; // menu is full
+        }
         this.items.put(nextSlot, guiItem);
     }
 
     public void addItem(int index, TebexGuiItem guiItem) {
+        if (index < 0 || index >= rows * 9) {
+            return;
+        }
         this.items.put(index, guiItem);
     }
 
@@ -75,6 +81,9 @@ public class ListingGui implements InventoryHolder {
         this.inventory.clear();
 
         for (Map.Entry<Integer,TebexGuiItem> guiItems : items.entrySet()) {
+            if (guiItems.getKey() < 0 || guiItems.getKey() >= this.inventory.getSize()) {
+                continue;
+            }
 
             TebexGuiItem guiItem = guiItems.getValue();
 
